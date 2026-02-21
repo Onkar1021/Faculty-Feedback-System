@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feedback Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { 
+            font-family: Arial; 
+            background: #eef2f5; 
+            padding-top: 20px;
+        }
+
+        .filter-row {
+            width: 90%;
+            margin: 0 auto 25px auto;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .filter-row select {
+            padding: 10px 12px;
+            font-size: 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            min-width: 180px;
+        }
+
+        .box {
+            width: 50%;
+            margin: 20px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow:0 0 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .box select {
+            width: 90%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+        }
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 260px));
+            justify-content: center;
+            gap: 18px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            background: #0078d7;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            width: 260px;
+            min-width: 260px;
+            max-width: 260px;
+            min-height: 48px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .btn:hover { background:#0078d7; }
+
+        table {
+            width: 90%;
+            margin: 25px auto;
+            background:white;
+            border-collapse: collapse;
+        }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; }
+        th { background:#0078d7; color:white; }
+
+        @media (max-width: 700px) {
+            .btn-row {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                width: 100%;
+                min-width: 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<h1 style="text-align:center; margin-bottom: 25px;">Feedback Report</h1>
+
+<!-- FILTERS (Dept, Sem, Division) -->
+<div class="filter-row">
+    <select id="filterDept">
+        <option value="">Select Department</option>
+        <option>Computer Science & Engineering</option>
+        <option>Mechanical Engineering</option>
+        <option>Civil Engineering</option>
+        <option>Electrical Engineering</option>
+        <option>Electronics & Computer Engineering</option>
+        <option>Artificial Intelligence & Machine Learning</option>
+    </select>
+
+    <select id="filterSem">
+        <option value="">Select Semester</option>
+        <option>1</option><option>2</option><option>3</option><option>4</option>
+        <option>5</option><option>6</option><option>7</option><option>8</option>
+    </select>
+
+    <select id="filterDiv">
+        <option value="">Division</option>
+        <option>A</option>
+        <option>B</option>
+    </select>
+</div>
+
+<!-- SUBJECT + BUTTONS -->
+<div class="box">
+    <h2>Select Subject</h2>
+
+    <select id="subject"></select>
+
+    <div class="btn-row">
+        <button class="btn" onclick="loadReport()">View Report</button>
+        <button class="btn" onclick="downloadSummaryPDF()">Download Summary PDF</button>
+        <button class="btn" onclick="downloadSummaryCSV()">Download Summary CSV</button>
+        <button class="btn" onclick="downloadDivisionPDF()">Download Division Summary PDF</button>
+    </div>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Question</th>
+            <th>Responses</th>
+            <th>Avg Rating</th>
+        </tr>
+    </thead>
+    <tbody id="reportTable"></tbody>
+</table>
+
+<script>
+// Load full subject list ONCE
+let allSubjects = [];
+
+async function loadSubjects() {
+    const res = await fetch("/admin/subject-list");
+    allSubjects = await res.json();  // store all subjects
+    filterSubjects();                // first load
+}
+
+// Filter based on Dept + Sem + Div
+function filterSubjects() {
+    const dept = document.getElementById("filterDept").value;
+    const sem  = document.getElementById("filterSem").value;
+    const div  = document.getElementById("filterDiv").value;
+
+    // Apply filters to subject list
+    let filtered = allSubjects.filter(s =>
+        (dept === "" || s.Department === dept) &&
+        (sem === "" || s.SemesterID == sem) &&
+        (div === "" || s.Division === div)
+    );
+
+    // Update dropdown
+    document.getElementById("subject").innerHTML =
+        filtered.length === 0
+        ? `<option>No subjects found</option>`
+        : filtered.map(s => `<option value="${s.SubjectID}">${s.Title}</option>`).join("");
+}
+
+// Load summary table
+async function loadReport() {
+    const id = document.getElementById("subject").value;
+    const res = await fetch(`/admin/feedback-summary/${id}`);
+    const data = await res.json();
+
+    document.getElementById("reportTable").innerHTML = data.map(r => `
+        <tr>
+            <td>${r.Question}</td>
+            <td>${r.Responses}</td>
+            <td>${r.AverageRating}</td>
+        </tr>
+    `).join("");
+}
+
+// PDF & CSV Download
+function downloadSummaryPDF() {
+    const id = document.getElementById("subject").value;
+    if (!id) return alert("Select a subject first!");
+    window.location = `/admin/summary/pdf/${id}`;
+}
+
+function downloadSummaryCSV() {
+    const id = document.getElementById("subject").value;
+    if (!id) return alert("Select a subject first!");
+    window.location = `/admin/summary/csv/${id}`;
+}
+
+function downloadDivisionPDF() {
+    const dept = document.getElementById("filterDept").value;
+    const sem = document.getElementById("filterSem").value;
+    const div = document.getElementById("filterDiv").value;
+
+    const q = new URLSearchParams({
+        dept: dept || "",
+        sem: sem || "",
+        div: div || ""
+    });
+
+    window.location = `/admin/summary/division/pdf?${q.toString()}`;
+}
+
+// Attach filter listeners
+filterDept.onchange = filterSubjects;
+filterSem.onchange  = filterSubjects;
+filterDiv.onchange  = filterSubjects;
+
+loadSubjects();
+</script>
+<div style="text-align: center; margin: 20px;">
+    <button onclick="window.location.href='admin.html'" style="padding: 8px 20px; background: #6c757d; font-size: 14px; border: none; border-radius: 5px; cursor: pointer; color: white;">← Back</button>
+</div>
+
+</body>
+</html>
+

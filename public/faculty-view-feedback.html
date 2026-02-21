@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>View Feedback</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="welcome-text">Faculty Feedback</div>
+    <button onclick="location.href='faculty-dashboard.html'" class="logout-btn">Back</button>
+  </div>
+
+  <div class="container">
+
+    <h2 id="subjectTitle"></h2>
+    
+    <h3>Summary</h3>
+    <div id="summary"></div>
+
+    <h3>Comments</h3>
+    <div id="comments"></div>
+
+  </div>
+
+<script>
+const facultyId = localStorage.getItem('facultyId');
+const subjectId = localStorage.getItem('viewSubjectId');
+if(!facultyId) location.href='faculty-login.html';
+
+async function load() {
+
+  // Load subject meta
+  const sRes = await fetch(`/admin/subject-list`);
+  const subjects = await sRes.json();
+  const sub = subjects.find(x => x.SubjectID == subjectId);
+  document.getElementById('subjectTitle').innerText = 
+    sub ? `${sub.Title} - Div ${sub.Division}` : 'Subject';
+
+  // Summary fetch
+  const res = await fetch(`/faculty/summary/${facultyId}/${subjectId}`);
+  const summaryData = await res.json();
+  showSummary(summaryData);
+
+  // Comments fetch
+  const cRes = await fetch(`/faculty/comments/${facultyId}/${subjectId}`);
+  const commentsData = await cRes.json();
+  showComments(commentsData);
+}
+
+function showSummary(list) {
+  document.getElementById('summary').innerHTML = 
+    list.map((r,i)=>`
+      <p>${i+1}. ${r.Question} — <b>${r.AvgRating}</b> (Responses: ${r.Responses})</p>
+    `).join('');
+}
+
+function showComments(list) {
+  document.getElementById('comments').innerHTML = 
+    list.length ? list.map(c => `
+      <div style="background:#fff;padding:10px;margin:8px 0;border-radius:6px;">
+        <b>(${c.Division || 'N/A'})</b> ${c.Comment}<br>
+        <small>${c.SubmittedAt}</small>
+      </div>
+    `).join('') : '<p>No comments yet.</p>';
+}
+
+load();
+</script>
+
+</body>
+</html>

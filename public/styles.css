@@ -1,0 +1,446 @@
+/*GENERAL PAGE STYLE */
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f7fa;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --brand-primary: #0078d7;
+    --brand-primary-hover: #005fa3;
+    --brand-dark: #003366;
+    --brand-danger: #ff4d4d;
+    --surface: #ffffff;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --shadow-sm: 0 3px 6px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* CONTAINER */
+.container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: var(--surface);
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+h1, h2, h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* INPUTS*/
+input, textarea, select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0 18px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+    background: #fff;
+}
+
+textarea {
+    min-height: 90px;
+}
+
+/* FULL-WIDTH BUTTONS */
+button {
+    width: 100%;
+    padding: 14px;
+    background: var(--brand-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 8px;
+    min-height: 44px;
+    box-sizing: border-box;
+}
+
+button:hover, .menu-btn:hover {
+    background: var(--brand-primary-hover);
+}
+
+/* HOME PAGE MENU BUTTONS */
+.menu-btn {
+    display: block;
+    text-align: center;
+    margin-bottom: 12px;
+    text-decoration: none;
+    width: 92%;
+    padding: 14px;
+    background: var(--brand-primary);
+    color: white;
+    border-radius: var(--radius-md);
+    font-size: 16px;
+    cursor: pointer;
+    min-height: 44px;
+    box-sizing: border-box;
+}
+
+/* RATING BAR*/
+.rating-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.rating-box {
+    flex: 1;
+    padding: 12px 0;
+    margin: 0 5px;
+    background: #e2e8f0;
+    text-align: center;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.rating-box:hover {
+    background: #cbd5e1;
+}
+
+.rating-box.selected {
+    background: #0078d7;
+    color: white;
+    font-weight: bold;
+}
+
+/* SUBJECT CARD */
+.subject-card {
+    background: var(--surface);
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border-left: 5px solid var(--brand-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+/* LOGIN PAGE*/
+.login-body {
+    background: #eef6fb;
+}
+
+.login-card {
+    max-width: 420px;
+    margin: 80px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.brand-title {
+    font-size: 26px;
+    font-weight: bold;
+    color: #003366;
+    margin-bottom: 5px;
+}
+
+.brand-subtitle {
+    font-size: 15px;
+    color: #444;
+    margin-bottom: 25px;
+}
+
+.login-link {
+    display: block;
+    margin-top: 15px;
+    text-decoration: none;
+    color: #0078d7;
+    font-size: 15px;
+}
+
+.error-text {
+    color: red;
+    margin-top: 10px;
+}
+
+/* SPINNER */
+button.loading::after {
+    content: "";
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-left-color: white;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 10px;
+    animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* TOP BAR  */
+.top-bar {
+    background: var(--brand-dark);
+    color:white;
+    padding:12px 25px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+/* RIGHT SIDE GROUP */
+.action-buttons {
+    display:flex;
+    gap:15px;
+}
+
+/* Buttons */
+.logout-btn, .pass-btn {
+    min-width: 148px;
+    min-height: 40px;
+    padding: 8px 14px;
+    border:none;
+    color:white;
+    font-size:14px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.pass-btn { background: var(--brand-primary); }
+.logout-btn { background: var(--brand-danger); }
+
+.subject-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.subject-actions button {
+    flex: 1 1 170px;
+    margin-top: 0;
+    min-width: 170px;
+}
+
+.secondary-btn {
+    width: auto;
+    min-width: 130px;
+    min-height: 40px;
+    padding: 10px 16px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.secondary-btn:hover {
+    background: #5a6268;
+}
+
+.alert-success {
+    color: #0f7a2b;
+    font-weight: 600;
+}
+
+/* MAIN LANDING PAGE */
+.landing-page {
+    min-height: 100vh;
+    margin: 0;
+    padding: 24px 16px 36px;
+    background: linear-gradient(180deg, #f6f8fb 0%, #edf2f9 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.institute-banner {
+    width: min(1180px, 100%);
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: var(--shadow-md);
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    box-sizing: border-box;
+}
+
+.banner-single-logo {
+    max-width: 980px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.banner-single-logo img {
+    width: 100%;
+    max-height: 220px;
+    object-fit: contain;
+}
+
+.banner-fallback h1 {
+    margin: 0;
+    color: #b73736;
+    font-size: clamp(24px, 3.1vw, 46px);
+    line-height: 1.18;
+    font-weight: 800;
+}
+
+.banner-fallback p {
+    margin: 6px 0 0;
+    color: #b73736;
+    font-size: clamp(18px, 2.3vw, 34px);
+    font-weight: 700;
+}
+
+.banner-meta {
+    margin-top: 8px;
+    text-align: center;
+    color: #1c2431;
+    font-size: 15px;
+    line-height: 1.35;
+    font-weight: 700;
+}
+
+.banner-contact {
+    margin: 8px 0 0;
+    text-align: center;
+    color: #1e2738;
+    font-size: 20px;
+    letter-spacing: 0.4px;
+    font-weight: 700;
+}
+
+.landing-title {
+    margin: 2px 0 20px;
+    font-size: 44px;
+    color: #333;
+}
+
+.landing-cards {
+    display: flex;
+    gap: 25px;
+    justify-content: center;
+    align-items: stretch;
+    flex-wrap: wrap;
+}
+
+.landing-card {
+    background: white;
+    width: 260px;
+    min-height: 210px;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+.landing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+.landing-card h2 {
+    margin-bottom: 20px;
+    font-size: 22px;
+    color: var(--brand-primary);
+}
+
+.landing-card .btn {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 12px;
+    margin-top: 10px;
+    border: none;
+    background: var(--brand-primary);
+    color: white;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.3s;
+    box-sizing: border-box;
+}
+
+.landing-card .btn:hover {
+    background: var(--brand-primary-hover);
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+    .top-bar {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .action-buttons {
+        justify-content: center;
+    }
+
+    .container {
+        width: 90%;
+        margin: 20px auto;
+        padding: 20px;
+    }
+
+    .login-card {
+        width: 90%;
+        margin: 40px auto;
+    }
+
+    .rating-row {
+        flex-direction: column;
+    }
+
+    .rating-box {
+        margin: 5px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    h1, h2, h3 {
+        font-size: 20px;
+    }
+
+    button, .menu-btn {
+        font-size: 15px;
+    }
+
+    .logout-btn, .pass-btn {
+        width: 100%;
+    }
+
+    .banner-single-logo img {
+        max-height: 140px;
+    }
+
+    .banner-meta {
+        font-size: 13px;
+    }
+
+    .banner-contact {
+        font-size: 16px;
+    }
+
+    .landing-title {
+        font-size: 32px;
+    }
+
+    .subject-actions button {
+        min-width: 100%;
+    }
+}

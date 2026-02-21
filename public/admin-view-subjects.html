@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subject List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial; background: #eef2f5; }
+
+        .filter-bar {
+            width: 95%;
+            margin: 20px auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-bar input, .filter-bar select {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #bbb;
+            font-size: 14px;
+        }
+
+        table {
+            width: 95%; margin: 20px auto;
+            border-collapse: collapse; background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; }
+        th { background: #0078d7; color: white; }
+
+        .action-btn {
+            border: none;
+            border-radius: 5px;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            color: white;
+            width: auto;
+        }
+
+        .unassign-btn {
+            background: #dc3545;
+        }
+
+        .unassign-btn:disabled {
+            background: #9aa4ad;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<h2 style="text-align:center;">All Subjects</h2>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+    <input type="text" id="searchBox" placeholder="Search by ID, Code, Title, Faculty">
+
+    <select id="filterDept">
+        <option value="">All Departments</option>
+    </select>
+
+    <select id="filterSem">
+        <option value="">All Semesters</option>
+    </select>
+
+    <select id="filterDiv">
+        <option value="">All Divisions</option>
+    </select>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th><th>Code</th><th>Title</th><th>Department</th>
+            <th>Semester</th><th>Division</th><th>Faculty</th><th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="subjectTable"></tbody>
+</table>
+
+<script>
+let subjects = [];
+
+async function loadSubjects() {
+    const res = await fetch("/admin/subject-list");
+    subjects = await res.json();
+
+    loadFilterOptions();
+    applyFilters(); // show all initially
+}
+
+function loadFilterOptions() {
+    let deptSet = new Set();
+    let semSet = new Set();
+    let divSet = new Set();
+
+    subjects.forEach(s => {
+        deptSet.add(s.Department);
+        semSet.add(s.SemesterID);
+        if (s.Division) divSet.add(s.Division);
+    });
+
+    // fill departments
+    filterDept.innerHTML = `<option value="">All Departments</option>` +
+        [...deptSet].map(d => `<option value="${d}">${d}</option>`).join("");
+
+    // fill semesters
+    filterSem.innerHTML = `<option value="">All Semesters</option>` +
+        [...semSet].map(s => `<option value="${s}">${s}</option>`).join("");
+
+    // fill divisions
+    filterDiv.innerHTML = `<option value="">All Divisions</option>` +
+        [...divSet].map(d => `<option value="${d}">${d}</option>`).join("");
+}
+
+function applyFilters() {
+    const search = searchBox.value.toLowerCase();
+    const dept = filterDept.value;
+    const sem = filterSem.value;
+    const div = filterDiv.value;
+
+    const filtered = subjects.filter(s =>
+        (s.Title.toLowerCase().includes(search) ||
+         s.Code.toLowerCase().includes(search) ||
+         s.FacultyName?.toLowerCase().includes(search) ||
+         s.SubjectID.toString().includes(search)) &&
+
+        (dept === "" || s.Department === dept) &&
+        (sem === "" || s.SemesterID == sem) &&
+        (div === "" || s.Division === div)
+    );
+
+    renderTable(filtered);
+}
+
+function renderTable(list) {
+    subjectTable.innerHTML = list.map(s => `
+        <tr>
+            <td>${s.SubjectID}</td>
+            <td>${s.Code}</td>
+            <td>${s.Title}</td>
+            <td>${s.Department}</td>
+            <td>${s.SemesterID}</td>
+            <td>${s.Division ?? "-"}</td>
+            <td>${s.FacultyName ?? "Not Assigned"}</td>
+            <td>
+                <button
+                    class="action-btn unassign-btn"
+                    onclick="unassignFaculty(${s.SubjectID}, '${(s.Title || '').replace(/'/g, "\\'")}')"
+                    ${s.FacultyName ? "" : "disabled"}>
+                    Unassign
+                </button>
+            </td>
+        </tr>
+    `).join("");
+}
+
+async function unassignFaculty(subjectId, subjectTitle) {
+    if (!confirm(`Unassign faculty from "${subjectTitle}"?`)) {
+        return;
+    }
+
+    try {
+        const res = await fetch("/admin/unassign-faculty", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ subjectId })
+        });
+
+        const data = await res.json();
+        if (!res.ok || data.error) {
+            alert("Error: " + (data.error || "Failed to unassign faculty"));
+            return;
+        }
+
+        alert("Faculty unassigned successfully!");
+        loadSubjects();
+    } catch (err) {
+        alert("Error unassigning faculty. Please try again.");
+        console.error("Unassign error:", err);
+    }
+}
+
+searchBox.onkeyup = applyFilters;
+filterDept.onchange = applyFilters;
+filterSem.onchange = applyFilters;
+filterDiv.onchange = applyFilters;
+
+loadSubjects();
+</script>
+
+<div style="text-align: center; margin: 20px;">
+    <button onclick="window.location.href='admin.html'" style="padding: 8px 20px; background: #6c757d; font-size: 14px; border: none; border-radius: 5px; cursor: pointer; color: white;">← Back</button>
+</div>
+
+</body>
+</html>

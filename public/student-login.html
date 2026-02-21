@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Login — SGI EduInsight</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .login-card {
+            max-width: 420px;
+            margin: 80px auto;
+        }
+
+        .login-links {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .login-links .login-link {
+            margin-top: 0;
+        }
+    </style>
+</head>
+
+<body class="login-body">
+
+<div class="login-card">
+    <div class="brand-title">SGI EduInsight</div>
+    <div class="brand-subtitle">Student Login</div>
+
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+
+    <button id="loginBtn" onclick="loginStudent()">Login</button>
+
+    <div class="login-links">
+        <a href="student-register.html" class="login-link">Create New Account</a>
+        <a href="index.html" class="login-link">Back to Home</a>
+    </div>
+
+    <p id="msg" class="error-text"></p>
+</div>
+
+<script>
+document.addEventListener("keydown", e => {
+    if (e.key === "Enter") loginStudent();
+});
+
+async function loginStudent() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const btn = document.getElementById("loginBtn");
+    const msg = document.getElementById("msg");
+
+    msg.textContent = "";
+
+    if (!email || !password) {
+        msg.textContent = "Please enter both email and password.";
+        return;
+    }
+
+    btn.disabled = true;
+    btn.classList.add("loading");
+
+    try {
+        const res = await fetch("/auth/student-login", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ email, password })
+        });
+
+        const out = await res.json();
+
+        if (out.error) {
+            msg.textContent = out.error;
+            return;
+        }
+
+        localStorage.setItem("studentId", out.studentId);
+        localStorage.setItem("studentName", out.name);
+
+        window.location = "student-dashboard.html";
+
+    } catch (err) {
+        msg.textContent = "Network error. Try again.";
+    } finally {
+        btn.disabled = false;
+        btn.classList.remove("loading");
+    }
+}
+</script>
+
+</body>
+</html>

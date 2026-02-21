@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .top-bar-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .top-bar-actions .pass-btn,
+        .top-bar-actions .secondary-btn,
+        .top-bar-actions .logout-btn {
+            width: 150px !important;
+            min-width: 150px !important;
+            max-width: 150px;
+            min-height: 38px !important;
+            height: 38px !important;
+            margin: 0;
+            margin-top: 0 !important;
+            padding: 8px 12px !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+<div class="top-bar">
+    <span class="welcome-text">Welcome, <span id="studentNameTop"></span></span>
+    <div class="top-bar-actions">
+        <button class="pass-btn" onclick="window.location.href='student-change-password.html'">Change Password</button>
+        <button class="secondary-btn" onclick="window.location.href='index.html'">Home</button>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+    </div>
+</div>
+
+<div class="container">
+    <h2>Welcome, <span id="studentNameHeading"></span></h2>
+    <div id="subjectList"></div>
+</div>
+
+<script>
+const studentId = localStorage.getItem("studentId");
+const studentName = localStorage.getItem("studentName") || "Student";
+
+document.getElementById("studentNameTop").innerText = studentName;
+document.getElementById("studentNameHeading").innerText = studentName;
+
+async function loadSubjects() {
+    const res = await fetch(`/student/subjects/${studentId}`);
+    const subjects = await res.json();
+
+    const container = document.getElementById("subjectList");
+    container.innerHTML = "";
+
+    subjects.forEach((sub) => {
+        const div = document.createElement("div");
+        div.className = "subject-card";
+
+        div.innerHTML = `
+            <h3>${sub.Title}</h3>
+            <p><b>Faculty:</b> ${sub.FacultyName ?? "Not Assigned"}</p>
+            ${
+                sub.Submitted == 1
+                ? `<p class="alert-success"><b>Feedback Submitted</b></p>`
+                : sub.FeedbackOpen != 1
+                ? `<p class="error-text"><b>Feedback window is closed</b></p>`
+                : sub.Restricted == 1
+                ? `<p class="error-text"><b>Feedback restricted${sub.RestrictionReason ? `: ${sub.RestrictionReason}` : ""}</b></p>`
+                : `<button onclick="giveFeedback(${sub.SubjectID}, '${sub.Title}')">Give Feedback</button>`
+            }
+        `;
+
+        container.appendChild(div);
+    });
+}
+
+function giveFeedback(subjectId, title) {
+    localStorage.setItem("subjectId", subjectId);
+    localStorage.setItem("subjectName", title);
+    window.location = "student-feedback.html";
+}
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    localStorage.clear();
+    window.location.href = "student-login.html";
+});
+
+loadSubjects();
+</script>
+
+</body>
+</html>

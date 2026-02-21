@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Faculty List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { 
+            font-family: Arial; 
+            background: #eef2f5; 
+            margin: 0;
+            padding: 0;
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 25px;
+            color: #333;
+        }
+
+        /* === FILTER BAR === */
+        .filter-bar {
+            width: 90%;
+            margin: 20px auto;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .filter-bar input, 
+        .filter-bar select {
+            padding: 10px;
+            border: 1px solid #bbb;
+            border-radius: 8px;
+            flex: 1;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        /* === TABLE === */
+        table {
+            width: 90%; 
+            margin: 20px auto;
+            border-collapse: collapse; 
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 12px; 
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th { 
+            background: #0078d7; 
+            color: white; 
+        }
+
+        .reset-btn {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            width: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .reset-btn:hover {
+            background: #e55a2b;
+        }
+
+        .edit-btn {
+            background: #0078d7;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            width: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .edit-btn:hover {
+            background: #005fa3;
+        }
+        
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            width: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .actions-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn-compact {
+            min-width: 70px;
+            height: 32px;
+        }
+
+        /* Modal for password reset */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 15% auto;
+            padding: 25px;
+            border-radius: 10px;
+            width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .modal-content input,
+        .modal-content select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #0078d7;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #005fa3;
+        }
+
+        .btn-cancel {
+            background: #ccc;
+            color: #333;
+        }
+
+        .btn-cancel:hover {
+            background: #bbb;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+    </style>
+</head>
+<body>
+
+<h2>Faculty List</h2>
+
+<!-- 🔍 FILTERS -->
+<div class="filter-bar">
+    <input type="text" id="searchText" placeholder="Search by name/email" />
+
+    <select id="filterDept">
+        <option value="">All Departments</option>
+        <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+        <option value="Mechanical Engineering">Mechanical Engineering</option>
+        <option value="Civil Engineering">Civil Engineering</option>
+        <option value="Electrical Engineering">Electrical Engineering</option>
+        <option value="Electronics & Computer Engineering">Electronics & Computer Engineering</option>
+        <option value="Artificial Intelligence & Machine Learning">Artificial Intelligence & Machine Learning</option>
+    </select>
+</div>
+
+<!-- TABLE -->
+<table>
+    <thead>
+        <tr>
+            <th>ID</th><th>Name</th><th>Email</th><th>Department</th><th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="facultyTable"></tbody>
+</table>
+
+<!-- MODAL FOR PASSWORD RESET -->
+<div id="resetModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3>Reset Faculty Password</h3>
+        <p id="facultyInfo" style="color: #666; margin-bottom: 15px;"></p>
+        <input type="password" id="newPassword" placeholder="Enter new password" />
+        <input type="password" id="confirmPassword" placeholder="Confirm new password" />
+        <div class="modal-buttons">
+            <button class="btn-primary" onclick="confirmReset()">Reset Password</button>
+            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        </div>
+        <p id="resetError" style="color: red; font-size: 12px; margin-top: 10px;"></p>
+    </div>
+</div>
+
+<!-- MODAL FOR EDIT FACULTY -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeEditModal()">&times;</span>
+        <h3>Edit Faculty</h3>
+        <input type="text" id="editName" placeholder="Faculty Name" />
+        <input type="email" id="editEmail" placeholder="Email" />
+        <select id="editDepartment">
+            <option value="">Select Department</option>
+            <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+            <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+            <option value="Electronics & Computer Engineering">Electronics & Computer Engineering</option>
+            <option value="Artificial Intelligence & Machine Learning">Artificial Intelligence & Machine Learning</option>
+        </select>
+        <div class="modal-buttons">
+            <button class="btn-primary" onclick="confirmEdit()">Update</button>
+            <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+        </div>
+        <p id="editError" style="color: red; font-size: 12px; margin-top: 10px;"></p>
+    </div>
+</div>
+
+<script>
+let faculty = [];
+
+// LOAD faculty from backend
+async function loadFaculty() {
+    const res = await fetch("/admin/faculty-list");
+    faculty = await res.json();
+    showFaculty(faculty);
+}
+
+let currentFacultyId = null;
+
+// DISPLAY faculty rows
+function showFaculty(list) {
+    document.getElementById("facultyTable").innerHTML =
+        list.map(f => `
+        <tr>
+            <td>${f.FacultyID}</td>
+            <td>${f.Name}</td>
+            <td>${f.Email}</td>
+            <td>${f.Department}</td>
+            <td style="white-space: nowrap;">
+                <div class="actions-wrap">
+                    <button class="reset-btn action-btn-compact" onclick="openResetModal(${f.FacultyID}, '${f.Name}', '${f.Email}')">Reset</button>
+                    <button class="edit-btn action-btn-compact" onclick="openEditModal(${f.FacultyID}, '${f.Name.replace(/'/g, "\\'")}', '${f.Email}', '${f.Department.replace(/'/g, "\\'")}')">Edit</button>
+                    <button class="delete-btn action-btn-compact" onclick="deleteFaculty(${f.FacultyID}, '${f.Name.replace(/'/g, "\\'")}')">Delete</button>
+                </div>
+            </td>
+        </tr>
+    `).join("");
+}
+
+// OPEN RESET MODAL
+function openResetModal(facultyId, name, email) {
+    currentFacultyId = facultyId;
+    document.getElementById("facultyInfo").innerText = `Reset password for: ${name} (${email})`;
+    document.getElementById("newPassword").value = "";
+    document.getElementById("confirmPassword").value = "";
+    document.getElementById("resetError").innerText = "";
+    document.getElementById("resetModal").style.display = "block";
+}
+
+// CLOSE MODAL
+function closeModal() {
+    document.getElementById("resetModal").style.display = "none";
+    currentFacultyId = null;
+}
+
+// CONFIRM RESET
+async function confirmReset() {
+    const newPassword = document.getElementById("newPassword").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const errorMsg = document.getElementById("resetError");
+
+    if (!newPassword || !confirmPassword) {
+        errorMsg.innerText = "Please enter both password fields";
+        return;
+    }
+
+    if (newPassword.length < 4) {
+        errorMsg.innerText = "Password must be at least 4 characters";
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        errorMsg.innerText = "Passwords do not match";
+        return;
+    }
+
+    try {
+        const res = await fetch("/admin/set-faculty-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                facultyId: currentFacultyId,
+                password: newPassword
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+            errorMsg.innerText = data.error;
+            return;
+        }
+
+        alert("Password reset successfully!");
+        closeModal();
+    } catch (err) {
+        errorMsg.innerText = "Error resetting password. Please try again.";
+        console.error("Reset error:", err);
+    }
+}
+
+// CLOSE MODAL WHEN CLICKING OUTSIDE
+window.onclick = function(event) {
+    const modal = document.getElementById("resetModal");
+    const editModal = document.getElementById("editModal");
+    if (event.target === modal) {
+        closeModal();
+    }
+    if (event.target === editModal) {
+        closeEditModal();
+    }
+}
+
+// EDIT FACULTY
+let editFacultyId = null;
+
+function openEditModal(facultyId, name, email, department) {
+    editFacultyId = facultyId;
+    document.getElementById("editName").value = name;
+    document.getElementById("editEmail").value = email;
+    document.getElementById("editDepartment").value = department;
+    document.getElementById("editError").innerText = "";
+    document.getElementById("editModal").style.display = "block";
+}
+
+function closeEditModal() {
+    document.getElementById("editModal").style.display = "none";
+    editFacultyId = null;
+}
+
+async function confirmEdit() {
+    const name = document.getElementById("editName").value.trim();
+    const email = document.getElementById("editEmail").value.trim();
+    const department = document.getElementById("editDepartment").value;
+    const errorMsg = document.getElementById("editError");
+
+    if (!name || !email || !department) {
+        errorMsg.innerText = "Please fill all fields";
+        return;
+    }
+
+    try {
+        const res = await fetch("/admin/update-faculty", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                facultyId: editFacultyId,
+                name,
+                email,
+                department
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+            errorMsg.innerText = data.error;
+            return;
+        }
+
+        alert("Faculty updated successfully!");
+        closeEditModal();
+        loadFaculty();
+    } catch (err) {
+        errorMsg.innerText = "Error updating faculty. Please try again.";
+        console.error("Edit error:", err);
+    }
+}
+
+// DELETE FACULTY
+async function deleteFaculty(facultyId, name) {
+    if (!confirm(`Are you sure you want to delete ${name}? This action cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        const res = await fetch("/admin/delete-faculty", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ facultyId })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+            alert("Error: " + (data.error || "Failed to delete faculty"));
+            console.error("Delete error:", data);
+            return;
+        }
+
+        alert("Faculty deleted successfully!");
+        loadFaculty();
+    } catch (err) {
+        alert("Error deleting faculty. Please try again.");
+        console.error("Delete error:", err);
+    }
+}
+
+// APPLY FILTERS
+function applyFilters() {
+    let s = document.getElementById("searchText").value.toLowerCase();
+    let dept = document.getElementById("filterDept").value;
+
+    let filtered = faculty.filter(f =>
+        (f.Name.toLowerCase().includes(s) ||
+         f.Email.toLowerCase().includes(s)) &&
+        (dept === "" || f.Department === dept)
+    );
+
+    showFaculty(filtered);
+}
+
+// Event listeners
+searchText.onkeyup = applyFilters;
+filterDept.onchange = applyFilters;
+
+loadFaculty();
+</script>
+
+<div style="text-align: center; margin: 20px;">
+    <button onclick="window.location.href='admin.html'" style="padding: 8px 20px; background: #6c757d; font-size: 14px; border: none; border-radius: 5px; cursor: pointer; color: white;">← Back</button>
+</div>
+
+</body>
+</html>

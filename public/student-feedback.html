@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Give Feedback</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<h2 id="subName">Feedback</h2>
+
+<!-- RATING GUIDE BOX -->
+<div class="rating-guide">
+    <p><b>Rating Guide:</b></p>
+    <ul>
+        <li>5 — Excellent</li>
+        <li>4 — Good</li>
+        <li>3 — Fair</li>
+        <li>2 — Poor</li>
+        <li>1 — Very Poor</li>
+    </ul>
+</div>
+
+<!-- QUESTIONS SECTION -->
+<div id="questions" style="margin-top: 20px;"></div>
+
+<!-- COMMENTS SECTION -->
+<h3 style="margin-top: 25px;">Additional Comments (Optional)</h3>
+<textarea id="finalComment" placeholder="Write your feedback here..."></textarea>
+
+<!-- SUBMIT BUTTON -->
+<button onclick="submitFeedback()">Submit Feedback</button>
+
+<p id="msg" style="color: red;"></p>
+
+<script>
+const studentId = localStorage.getItem("studentId");
+const subjectId = localStorage.getItem("subjectId");
+
+// Load Questions
+async function loadQuestions() {
+    const res = await fetch("/student/questions");
+    const data = await res.json();
+
+    const qContainer = document.getElementById("questions");
+
+    data.forEach(q => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+            <p><b>${q.QuestionID}. ${q.Text}</b></p>
+            <div class="rating-row" data-qid="${q.QuestionID}">
+                <div class="rating-box">1</div>
+                <div class="rating-box">2</div>
+                <div class="rating-box">3</div>
+                <div class="rating-box">4</div>
+                <div class="rating-box">5</div>
+            </div>
+        `;
+        qContainer.appendChild(div);
+    });
+
+    setRatingClickEvents();
+}
+
+loadQuestions();
+
+// Rating selection effect
+function setRatingClickEvents() {
+    document.querySelectorAll(".rating-box").forEach(box => {
+        box.addEventListener("click", () => {
+            const row = box.parentElement;
+            row.querySelectorAll(".rating-box").forEach(b => b.classList.remove("selected"));
+            box.classList.add("selected");
+        });
+    });
+}
+
+// Submit Feedback
+async function submitFeedback() {
+    let responses = [];
+    let allAnswered = true;
+
+    document.querySelectorAll(".rating-row").forEach(row => {
+        const qid = row.getAttribute("data-qid");
+        const selected = row.querySelector(".selected");
+
+        if (!selected) {
+            allAnswered = false;
+        } else {
+            responses.push({
+            questionId: qid,
+            rating: selected.innerText,
+            comment: document.getElementById("finalComment").value || null
+});
+
+        }
+    });
+
+    if (!allAnswered) {
+        document.getElementById("msg").innerText = "⚠ Please rate every question before submitting.";
+        return;
+    }
+
+    // Send to backend
+    const res = await fetch("/student/submit-feedback", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            studentId,
+            subjectId,
+            responses,
+            comment: document.getElementById("finalComment").value
+        })
+    });
+
+    const out = await res.json();
+
+    if (out.error) {
+        document.getElementById("msg").innerText = out.error;
+        return;
+    }
+
+    alert("Feedback submitted successfully!");
+    window.location = "student-dashboard.html";
+}
+</script>
+
+<div style="text-align: center; margin: 20px;">
+    <button onclick="window.location.href='student-dashboard.html'" style="padding: 8px 20px; background: #6c757d; font-size: 14px; border: none; border-radius: 5px; cursor: pointer; color: white;">← Back to Dashboard</button>
+    <button onclick="window.location.href='index.html'" style="padding: 8px 20px; background: #0078d7; font-size: 14px; border: none; border-radius: 5px; cursor: pointer; color: white; margin-left: 10px;">Home</button>
+</div>
+
+</body>
+</html>

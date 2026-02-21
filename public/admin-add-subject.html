@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"><title>Add Subject</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+  <div class="container">
+    <h2>Add Subject</h2>
+    <input id="code" placeholder="Subject code">
+    <input id="title" placeholder="Subject title">
+    <select id="department">
+        <option value="">Select Department</option>
+        <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+        <option value="Mechanical Engineering">Mechanical Engineering</option>
+        <option value="Civil Engineering">Civil Engineering</option>
+        <option value="Electrical Engineering">Electrical Engineering</option>
+        <option value="Electronics & Computer Engineering">Electronics & Computer Engineering</option>
+        <option value="Artificial Intelligence & Machine Learning">Artificial Intelligence & Machine Learning</option>
+    </select>
+    <select id="semester"><option value="">Semester</option><option value="1">1</option><option value="2">2</option>
+    <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+    <option value="6">6</option><option value="7">7</option><option value="8">8</option></select>
+    <label>Divisions (Ctrl/Shift to multi-select)</label>
+    <select id="division" multiple size="3"></select>
+
+    <button onclick="submitSubject()">Add Subject</button>
+    <p id="msg"></p>
+    
+    <div style="text-align: center; margin-top: 15px;">
+        <button onclick="window.location.href='admin.html'" style="width: auto; padding: 8px 20px; background: #6c757d; font-size: 14px; border: none; border-radius: 5px; cursor: pointer; color: white;">← Back</button>
+    </div>
+  </div>
+
+<script>
+async function loadDivisions(){
+  const dept = document.getElementById('department').value.trim();
+  const sem = document.getElementById('semester').value;
+  const sel = document.getElementById('division');
+  sel.innerHTML = '';
+  if(!dept || !sem) return;
+  const res = await fetch(`/admin/divisions/${encodeURIComponent(dept)}/${sem}`);
+  const data = await res.json();
+  if(!data.length) sel.innerHTML = '<option value="A">A</option>';
+  else sel.innerHTML = data.map(d => `<option value="${d.DivisionName}">${d.DivisionName}</option>`).join('');
+}
+
+document.getElementById('department').addEventListener('change', loadDivisions);
+document.getElementById('semester').addEventListener('change', loadDivisions);
+
+async function submitSubject(){
+  const code = document.getElementById('code').value.trim();
+  const title = document.getElementById('title').value.trim();
+  const department = document.getElementById('department').value;
+  const semesterId = document.getElementById('semester').value;
+  const selected = Array.from(document.getElementById('division').selectedOptions).map(o=>o.value);
+  if(!code||!title||!department||!semesterId||selected.length===0){ document.getElementById('msg').innerText='Fill all fields'; return; }
+  const res = await fetch('/admin/add-subject', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ code, title, department, semesterId, division: selected })
+  });
+  const out = await res.json();
+  document.getElementById('msg').innerText = out.message || out.error || 'Done';
+}
+</script>
+</body>
+</html>

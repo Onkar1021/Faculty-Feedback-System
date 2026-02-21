@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>Admin Login - SGI EduInsight</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="login-body">
+
+<div class="login-card">
+    <div class="brand-title">SGI EduInsight</div>
+    <div class="brand-subtitle">Admin Login</div>
+
+    <input type="text" id="username" placeholder="Enter Username">
+    <input type="password" id="password" placeholder="Enter Password">
+    <button id="loginBtn" onclick="loginAdmin()">Login</button>
+
+    <p id="msg" class="error-text"></p>
+    <a class="login-link" href="index.html">Back to Home</a>
+</div>
+
+<script>
+function loginAdmin() {
+    const username = document.getElementById("username").value.trim();
+    const pwd = document.getElementById("password").value.trim();
+    const msg = document.getElementById("msg");
+
+    msg.textContent = "";
+
+    if (username === "admin" && pwd === "admin123") {
+        localStorage.setItem("adminLoggedIn", "1");
+        window.location.href = "admin.html";
+        return;
+    }
+
+    msg.textContent = "Invalid admin credentials";
+}
+</script>
+
+</body>
+</html>

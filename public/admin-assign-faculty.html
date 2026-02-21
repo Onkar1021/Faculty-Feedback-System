@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Assign Faculty</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { background: #eef2f5; }
+        .box {
+            width: 500px;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+        }
+        button {
+            background: #0078d7;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0078d7;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Assign Faculty</h2>
+
+    <label>Department</label>
+    <select id="department" onchange="loadSemesters()"></select>
+
+    <label>Semester</label>
+    <select id="semester" onchange="loadDivisions()"></select>
+
+    <label>Division</label>
+    <select id="division" onchange="loadSubjects()"></select>
+
+    <label>Subject</label>
+    <select id="subject"></select>
+
+    <label>Faculty</label>
+    <select id="faculty"></select>
+
+    <button onclick="assignFaculty()">Assign Faculty</button>
+
+    <p id="msg" style="color:red;"></p>
+    
+    <div style="text-align: center; margin-top: 15px;">
+        <button onclick="window.location.href='admin.html'" style="width: auto; padding: 8px 20px; background: #6c757d; font-size: 14px; border: none; border-radius: 5px; cursor: pointer; color: white;">← Back</button>
+    </div>
+</div>
+
+<script>
+async function loadDepartments() {
+    document.getElementById("department").innerHTML =
+        `<option>Computer Science & Engineering</option>
+         <option>Mechanical Engineering</option>
+         <option>Civil Engineering</option>
+         <option>Electrical Engineering</option>
+         <option>Electronics & Computer Engineering</option>
+         <option>Artificial Intelligence & Machine Learning</option>`;
+    loadSemesters();
+}
+
+function loadSemesters() {
+    document.getElementById("semester").innerHTML =
+        [...Array(8)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join('');
+    loadDivisions();
+}
+
+async function loadDivisions() {
+    const dept = document.getElementById("department").value;
+    const sem = document.getElementById("semester").value;
+
+    const res = await fetch(`/admin/divisions/${dept}/${sem}`);
+    const data = await res.json();
+
+    let html = "";
+    if (data.length === 0) {
+        html = `<option value="A">A</option>`;
+    } else {
+        html = data.map(d => `<option value="${d.DivisionName}">${d.DivisionName}</option>`).join('');
+    }
+
+    document.getElementById("division").innerHTML = html;
+    loadSubjects();
+}
+
+async function loadSubjects() {
+    const dept = document.getElementById("department").value;
+    const sem = document.getElementById("semester").value;
+    const div = document.getElementById("division").value;
+
+    const res = await fetch("/admin/subject-list");
+    const data = await res.json();
+
+    // FIX: include division check
+    const filtered = data.filter(s => 
+        s.Department && s.Department.toLowerCase() === dept.toLowerCase() &&
+        s.SemesterID == sem &&
+        (s.Division === div || s.Division === null || s.Division === "")  // allow subjects without division (temporary)
+    );
+
+    document.getElementById("subject").innerHTML =
+        filtered.length === 0
+        ? `<option>No subjects found</option>`
+        : filtered.map(s => `<option value="${s.SubjectID}">${s.Title}</option>`).join('');
+    loadFaculty();
+}
+async function loadFaculty() {
+    const dept = document.getElementById("department").value;
+    if (!dept) {
+        document.getElementById("faculty").innerHTML = '<option>Select department first</option>';
+        return;
+    }
+    
+    const res = await fetch("/admin/faculty-list");
+    const data = await res.json();
+
+    // Filter faculty by selected department (case-insensitive)
+    const filtered = data.filter(f => 
+        f.Department && f.Department.toLowerCase() === dept.toLowerCase()
+    );
+
+    document.getElementById("faculty").innerHTML =
+        filtered.length === 0
+        ? '<option>No faculty found for this department</option>'
+        : filtered.map(f => `<option value="${f.FacultyID}">${f.Name}</option>`).join('');
+}
+
+async function assignFaculty() {
+    const subjectId = document.getElementById("subject").value;
+    const facultyId = document.getElementById("faculty").value;
+    const division = document.getElementById("division").value;
+
+    const res = await fetch("/admin/assign-faculty", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subjectId, facultyId, division })
+    });
+
+    const out = await res.json();
+    document.getElementById("msg").innerText = out.message || out.error;
+}
+
+loadDepartments();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>Add Faculty - SGI EduInsight</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: #f3f6fa;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        .card {
+            width: min(92%, 620px);
+            background: #fff;
+            margin: auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 40px;
+            color: #002a5c;
+        }
+
+        label {
+            font-size: 17px;
+            margin-top: 16px;
+            display: block;
+            color: #002a5c;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            margin-top: 8px;
+            border-radius: 8px;
+            border: 1px solid #c9c9c9;
+            background: #fff;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 26px;
+            font-size: 16px;
+            background: #0078d7;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #005bb5;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Add Faculty</h2>
+
+    <label>Faculty Name</label>
+    <input id="name" placeholder="Enter Faculty Name">
+
+    <label>Email</label>
+    <input id="email" placeholder="Enter Faculty Email">
+
+    <label>Department</label>
+    <select id="department">
+        <option value="">Select Department</option>
+        <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+        <option value="Mechanical Engineering">Mechanical Engineering</option>
+        <option value="Civil Engineering">Civil Engineering</option>
+        <option value="Electrical Engineering">Electrical Engineering</option>
+        <option value="Electronics & Computer Engineering">Electronics & Computer Engineering</option>
+        <option value="Artificial Intelligence & Machine Learning">Artificial Intelligence & Machine Learning</option>
+    </select>
+
+    <button onclick="addFaculty()">Add Faculty</button>
+
+    <div style="text-align: center; margin-top: 18px;">
+        <button onclick="window.location.href='admin.html'" style="width: auto; padding: 8px 20px; background: #6c757d; font-size: 14px;">&larr; Back</button>
+    </div>
+</div>
+
+<script>
+async function addFaculty() {
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const department = document.getElementById("department").value;
+
+    if (!name || !email || !department) {
+        alert("Please fill all fields");
+        return;
+    }
+
+    const res = await fetch("/admin/add-faculty", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({name, email, department})
+    });
+
+    const data = await res.json();
+    alert(data.message || "Faculty added!");
+
+    document.getElementById("name").value = "";
+    document.getElementById("email").value = "";
+    document.getElementById("department").value = "";
+}
+</script>
+
+</body>
+</html>

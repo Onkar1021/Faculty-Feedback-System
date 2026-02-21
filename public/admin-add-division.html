@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>Add Division</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .container-box {
+            max-width: 450px;
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin: 40px auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-box">
+    <h2>Add Division</h2>
+
+    <label>Department</label>
+    <select id="dept">
+        <option value="">Select Department</option>
+        <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+        <option value="Mechanical Engineering">Mechanical Engineering</option>
+        <option value="Civil Engineering">Civil Engineering</option>
+        <option value="Electrical Engineering">Electrical Engineering</option>
+        <option value="Electronics & Computer Engineering">Electronics & Computer Engineering</option>
+        <option value="Artificial Intelligence & Machine Learning">Artificial Intelligence & Machine Learning</option>
+    </select>
+
+    <label>Semester</label>
+    <select id="sem">
+        <option value="">Select Semester</option>
+        <option value="1">Sem 1</option>
+        <option value="2">Sem 2</option>
+        <option value="3">Sem 3</option>
+        <option value="4">Sem 4</option>
+        <option value="5">Sem 5</option>
+        <option value="6">Sem 6</option>
+        <option value="7">Sem 7</option>
+        <option value="8">Sem 8</option>
+    </select>
+
+    <label>Division Name</label>
+    <input id="division" placeholder="Example: A or B">
+
+    <button onclick="addDivision()">Add Division</button>
+
+    <p id="msg" style="color:red;margin-top:10px;"></p>
+    
+    <div style="text-align: center; margin-top: 15px;">
+        <button onclick="window.location.href='admin.html'" style="width: auto; padding: 8px 20px; background: #6c757d; font-size: 14px; border: none; border-radius: 5px; cursor: pointer; color: white;">← Back</button>
+    </div>
+</div>
+
+<script>
+async function addDivision() {
+    const dept = document.getElementById("dept").value;
+    const sem = document.getElementById("sem").value;
+    const div = document.getElementById("division").value;
+
+    if (!dept || !sem || !div) {
+        document.getElementById("msg").innerText = "Please fill all fields.";
+        return;
+    }
+
+    const res = await fetch("/admin/add-division", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ department: dept, semester: sem, division: div })
+    });
+
+    const out = await res.json();
+
+    if (out.error) {
+        document.getElementById("msg").innerText = out.error;
+        return;
+    }
+
+    alert("Division added successfully!");
+    window.location.href = "admin.html";
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Registration – SGI EduInsight</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .brand-title {
+            text-align: center;
+            color: #003366;
+            font-size: 26px;
+            font-weight: bold;
+        }
+        .subtitle {
+            text-align: center;
+            margin-top: -10px;
+            margin-bottom: 25px;
+            color: #444;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1 class="brand-title">SGI EduInsight</h1>
+    <h2>Student Registration</h2>
+
+    <input id="name" placeholder="Full Name">
+
+    <input id="roll" type="number" placeholder="Roll Number (e.g., 1, 2, 45)">
+    
+    <input id="email" type="email" placeholder="Email">
+
+    <!-- Department Dropdown -->
+    <select id="dept">
+        <option value="">Select Department</option>
+        <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+        <option value="Mechanical Engineering">Mechanical Engineering</option>
+        <option value="Civil Engineering">Civil Engineering</option>
+        <option value="Electrical Engineering">Electrical Engineering</option>
+        <option value="Electronics & Computer Engineering">Electronics & Computer Engineering</option>
+        <option value="Artificial Intelligence & Machine Learning">Artificial Intelligence & Machine Learning</option>
+    </select>
+
+    <!-- Division Dropdown -->
+    <select id="div">
+        <option value="">Select Division</option>
+        <option value="A">A</option>
+        <option value="B">B</option>
+    </select>
+
+    <!-- Semester Dropdown -->
+    <select id="sem">
+        <option value="">Select Semester</option>
+        <option value="1">Semester 1</option>
+        <option value="2">Semester 2</option>
+        <option value="3">Semester 3</option>
+        <option value="4">Semester 4</option>
+        <option value="5">Semester 5</option>
+        <option value="6">Semester 6</option>
+        <option value="7">Semester 7</option>
+        <option value="8">Semester 8</option>
+    </select>
+
+    <input id="pass" type="password" placeholder="Password">
+
+    <button onclick="register()">Register</button>
+
+    <p id="msg" style="color:red;"></p>
+</div>
+
+<script>
+async function register() {
+    const data = {
+        name: document.getElementById("name").value.trim(),
+        rollno: document.getElementById("roll").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        department: document.getElementById("dept").value,
+        division: document.getElementById("div").value,
+        semester: document.getElementById("sem").value,
+        password: document.getElementById("pass").value.trim()
+    };
+
+    // Required field check
+    if (!data.name || !data.rollno || !data.email || !data.department || !data.division || !data.semester || !data.password) {
+        document.getElementById("msg").innerText = "Please fill all fields properly.";
+        return;
+    }
+
+    const res = await fetch("/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    });
+
+    const out = await res.json();
+
+    if (out.error) {
+        document.getElementById("msg").innerText = out.error;
+        return;
+    }
+
+    alert("Registration successful!");
+    window.location = "student-login.html";  // corrected redirect
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student List</title>
+    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    body {
+        font-family: Arial;
+        background: #eef2f5;
+        margin: 0;
+        padding: 0;
+    }
+
+    h2 {
+        text-align: center;
+        margin-top: 25px;
+        color: #003366;
+    }
+
+    /* FILTER BAR */
+    .filter-bar {
+        width: 95%;
+        margin: 20px auto;
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .filter-bar input,
+    .filter-bar select {
+        flex: 1;
+        padding: 12px;
+        border: 1px solid #ccc;
+        background: white;
+        border-radius: 8px;
+        font-size: 15px;
+    }
+
+    /* TABLE */
+    table {
+        width: 95%;
+        margin: 15px auto 40px;
+        background: white;
+        border-collapse: collapse;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    th {
+        background: #0078d7;
+        color: white;
+        padding: 12px;
+        font-size: 15px;
+    }
+
+    td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        font-size: 14px;
+    }
+
+    tr:hover {
+        background: #f5faff;
+    }
+
+    .edit-btn {
+        background: #0078d7;
+        color: white;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 13px;
+        width: auto !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px !important;
+        height: 32px !important;
+        margin-top: 0 !important;
+    }
+
+    .delete-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 13px;
+        width: auto !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px !important;
+        height: 32px !important;
+        margin-top: 0 !important;
+    }
+
+    .restrict-btn {
+        background: #ff9800;
+        color: white;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 13px;
+        width: auto !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px !important;
+        height: 32px !important;
+        margin-top: 0 !important;
+    }
+
+    .restrict-btn:hover {
+        background: #e08600;
+    }
+
+    .edit-btn:hover {
+        background: #005fa3;
+    }
+
+    .delete-btn:hover {
+        background: #c82333;
+    }
+
+    .actions-wrap {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .action-btn-compact {
+        min-width: 70px;
+        height: 32px;
+    }
+
+    .back-btn-short {
+        width: auto !important;
+        padding: 8px 20px;
+        background: #6c757d;
+        font-size: 14px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        color: white;
+        display: inline-block;
+        min-width: 120px;
+    }
+</style>
+
+</head>
+<body>
+
+<h2>Registered Students</h2>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+    <input type="text" id="searchText" placeholder="Search by name, roll, email">
+    <select id="filterDept"></select>
+    <select id="filterDiv"></select>
+    <select id="filterSem"></select>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Roll</th>
+      <th>Email</th>
+      <th>Dept</th>
+      <th>Division</th>
+      <th>Semester</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody id="studentTable"></tbody>
+</table>
+
+<script>
+let students = [];
+
+async function loadStudents() {
+    const res = await fetch("/admin/student-list");
+    students = await res.json();
+
+    // Fill filter dropdowns automatically
+    fillFilters(students);
+
+    showStudents(students);
+}
+
+function fillFilters(list) {
+    const dept = [...new Set(list.map(s => s.Department))];
+    const div = [...new Set(list.map(s => s.Division))];
+    const sem = [...new Set(list.map(s => s.Semester))];
+
+    filterDept.innerHTML = `<option value="">Department</option>` +
+        dept.map(d => `<option value="${d}">${d}</option>`).join("");
+
+    filterDiv.innerHTML = `<option value="">Division</option>` +
+        div.map(v => `<option value="${v}">${v}</option>`).join("");
+
+    filterSem.innerHTML = `<option value="">Semester</option>` +
+        sem.map(s => `<option value="${s}">${s}</option>`).join("");
+}
+
+function showStudents(list) {
+    document.getElementById("studentTable").innerHTML =
+        list.map(s => `
+        <tr>
+            <td>${s.Name}</td>
+            <td>${s.RollNo}</td>
+            <td>${s.Email}</td>
+            <td>${s.Department}</td>
+            <td>${s.Division}</td>
+            <td>${s.Semester}</td>
+            <td style="white-space: nowrap;">
+                <div class="actions-wrap">
+                    <button class="edit-btn action-btn-compact" onclick="openEditStudentModal(${s.StudentID}, '${s.Name.replace(/'/g, "\\'")}', '${s.Email}', '${s.Department.replace(/'/g, "\\'")}', '${s.Division}', ${s.Semester})">Edit</button>
+                    <button class="delete-btn action-btn-compact" onclick="deleteStudent(${s.StudentID}, '${s.Name.replace(/'/g, "\\'")}')">Delete</button>
+                    <button class="restrict-btn action-btn-compact" onclick="toggleRestriction(${s.StudentID}, ${Number(s.IsRestricted || 0)}, '${(s.Name || '').replace(/'/g, "\\'")}')">${Number(s.IsRestricted || 0) === 1 ? "Allow" : "Restrict"}</button>
+                </div>
+            </td>
+        </tr>
+        `).join("");
+}
+
+function applyFilters() {
+    let s = searchText.value.toLowerCase();
+    let d = filterDept.value;
+    let v = filterDiv.value;
+    let sem = filterSem.value;
+
+    let filtered = students.filter(st =>
+        (st.Name.toLowerCase().includes(s) ||
+         st.RollNo.toString().includes(s) ||
+         st.Email.toLowerCase().includes(s)) &&
+        (d === "" || st.Department === d) &&
+        (v === "" || st.Division === v) &&
+        (sem === "" || st.Semester == sem)
+    );
+
+    showStudents(filtered);
+}
+
+// EVENT LISTENERS
+searchText.onkeyup = applyFilters;
+filterDept.onchange = applyFilters;
+filterDiv.onchange = applyFilters;
+filterSem.onchange = applyFilters;
+
+loadStudents();
+
+// EDIT STUDENT
+let editStudentId = null;
+
+function openEditStudentModal(studentId, name, email, department, division, semester) {
+    editStudentId = studentId;
+    document.getElementById("editStudentName").value = name;
+    document.getElementById("editStudentEmail").value = email;
+    document.getElementById("editStudentDept").value = department;
+    document.getElementById("editStudentDiv").value = division;
+    document.getElementById("editStudentSem").value = semester;
+    document.getElementById("editStudentError").innerText = "";
+    document.getElementById("editStudentModal").style.display = "block";
+}
+
+function closeEditStudentModal() {
+    document.getElementById("editStudentModal").style.display = "none";
+    editStudentId = null;
+}
+
+async function confirmEditStudent() {
+    const name = document.getElementById("editStudentName").value.trim();
+    const email = document.getElementById("editStudentEmail").value.trim();
+    const department = document.getElementById("editStudentDept").value;
+    const division = document.getElementById("editStudentDiv").value;
+    const semester = document.getElementById("editStudentSem").value;
+    const errorMsg = document.getElementById("editStudentError");
+
+    if (!name || !email || !department || !division || !semester) {
+        errorMsg.innerText = "Please fill all fields";
+        return;
+    }
+
+    try {
+        const res = await fetch("/admin/update-student", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                studentId: editStudentId,
+                name,
+                email,
+                department,
+                division,
+                semester
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+            errorMsg.innerText = data.error;
+            return;
+        }
+
+        alert("Student updated successfully!");
+        closeEditStudentModal();
+        loadStudents();
+    } catch (err) {
+        errorMsg.innerText = "Error updating student. Please try again.";
+        console.error("Edit error:", err);
+    }
+}
+
+// DELETE STUDENT
+async function deleteStudent(studentId, name) {
+    if (!confirm(`Are you sure you want to delete ${name}? This will also delete all their enrollments and feedback. This action cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        const res = await fetch("/admin/delete-student", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ studentId })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+            alert("Error: " + (data.error || "Failed to delete student"));
+            console.error("Delete error:", data);
+            return;
+        }
+
+        alert("Student deleted successfully!");
+        loadStudents();
+    } catch (err) {
+        alert("Error deleting student. Please try again.");
+        console.error("Delete error:", err);
+    }
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const editModal = document.getElementById("editStudentModal");
+    if (event.target === editModal) {
+        closeEditStudentModal();
+    }
+}
+
+async function toggleRestriction(studentId, isRestricted, name) {
+    let reason = "";
+    let nextRestricted = isRestricted !== 1;
+    if (nextRestricted) {
+        reason = prompt(`Enter restriction reason for ${name} (optional):`) || "";
+    }
+
+    const res = await fetch("/admin/student-feedback-restriction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            studentId,
+            isRestricted: nextRestricted,
+            reason
+        })
+    });
+
+    const out = await res.json();
+    if (out.error) {
+        alert(out.error);
+        return;
+    }
+    loadStudents();
+}
+</script>
+
+<!-- MODAL FOR EDIT STUDENT -->
+<div id="editStudentModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
+    <div class="modal-content" style="background: white; margin: 15% auto; padding: 25px; border-radius: 10px; width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+        <span class="close" onclick="closeEditStudentModal()" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+        <h3 style="margin-top: 0; color: #333;">Edit Student</h3>
+        <input type="text" id="editStudentName" placeholder="Student Name" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;" />
+        <input type="email" id="editStudentEmail" placeholder="Email" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;" />
+        <select id="editStudentDept" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;">
+            <option value="">Select Department</option>
+            <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+            <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+            <option value="Electronics & Computer Engineering">Electronics & Computer Engineering</option>
+            <option value="Artificial Intelligence & Machine Learning">Artificial Intelligence & Machine Learning</option>
+        </select>
+        <select id="editStudentDiv" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;">
+            <option value="">Select Division</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+        </select>
+        <select id="editStudentSem" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;">
+            <option value="">Select Semester</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+        </select>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button onclick="confirmEditStudent()" style="flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; background: #0078d7; color: white;">Update</button>
+            <button onclick="closeEditStudentModal()" style="flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; background: #ccc; color: #333;">Cancel</button>
+        </div>
+        <p id="editStudentError" style="color: red; font-size: 12px; margin-top: 10px;"></p>
+    </div>
+</div>
+
+<div style="text-align: center; margin: 20px;">
+    <button class="back-btn-short" onclick="window.location.href='admin.html'">&larr; Back</button>
+</div>
+
+</body>
+</html>
+

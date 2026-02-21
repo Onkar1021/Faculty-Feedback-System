@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <title>Faculty Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .filter-row {
+      width: 90%;
+      margin: 20px auto;
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+    .filter-row select {
+      padding: 10px 12px;
+      font-size: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      min-width: 160px;
+    }
+  </style>
+</head>
+<body>
+<div class="top-bar">
+    <div class="welcome-text"><h3>Welcome, <span id="fname"></span></h3></div>
+    <div class="action-buttons">
+        <button id="changePwBtn" class="pass-btn">Change Password</button>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+    </div>
+</div>
+
+<div class="filter-row">
+    <select id="filterDept">
+      <option value="">Department</option>
+    </select>
+
+    <select id="filterSem">
+      <option value="">Semester</option>
+      <option>1</option><option>2</option><option>3</option><option>4</option>
+      <option>5</option><option>6</option><option>7</option><option>8</option>
+    </select>
+
+    <select id="filterDiv">
+      <option value="">Division</option>
+      <option>A</option>
+      <option>B</option>
+    </select>
+</div>
+
+<div class="container">
+    <h2>Your Subjects</h2>
+    <div id="subjectList"></div>
+</div>
+
+<script>
+let allSubjects = [];
+const facultyId = localStorage.getItem("facultyId");
+
+if (!facultyId) location.href = "faculty-login.html";
+
+document.getElementById("fname").innerText =
+  localStorage.getItem("facultyName") || "Faculty";
+
+document.getElementById("logoutBtn").onclick = () => {
+  localStorage.clear();
+  location.href = "faculty-login.html";
+};
+
+document.getElementById("changePwBtn").onclick = () => {
+  location.href = "faculty-change-password.html";
+};
+
+async function load() {
+  const res = await fetch(`/faculty/subjects/${facultyId}`);
+  allSubjects = await res.json();
+
+  const depts = [...new Set(allSubjects.map((s) => s.Department))];
+  document.getElementById("filterDept").innerHTML =
+    `<option value="">Department</option>` +
+    depts.map((d) => `<option>${d}</option>`).join("");
+
+  applyFilters();
+}
+
+function applyFilters() {
+  const d = filterDept.value;
+  const s = filterSem.value;
+  const v = filterDiv.value;
+
+  const filtered = allSubjects.filter((sub) =>
+    (d === "" || sub.Department === d) &&
+    (s === "" || sub.SemesterID == s) &&
+    (v === "" || sub.Division === v)
+  );
+
+  showSubjects(filtered);
+}
+
+function showSubjects(list) {
+  const container = document.getElementById("subjectList");
+
+  container.innerHTML = list.length ? list.map((s) => `
+    <div class="subject-card">
+      <h3>${s.Title}</h3>
+      <p>Code: ${s.Code} | ${s.Department} | Sem ${s.SemesterID} | Div ${s.Division}</p>
+      <div class="subject-actions">
+        <button onclick="viewSummary(${s.SubjectID})">View Summary</button>
+        <button onclick="downloadPDF(${s.SubjectID})">Download PDF</button>
+        <button onclick="downloadCSV(${s.SubjectID})">Download CSV</button>
+      </div>
+    </div>
+  `).join("") : "<p>No subjects match filters.</p>";
+}
+
+filterDept.onchange = applyFilters;
+filterSem.onchange = applyFilters;
+filterDiv.onchange = applyFilters;
+
+function viewSummary(subjectId) {
+  localStorage.setItem("viewSubjectId", subjectId);
+  location.href = "faculty-view-feedback.html";
+}
+function downloadPDF(subjectId) {
+  window.location = `/faculty/summary/pdf/${facultyId}/${subjectId}`;
+}
+function downloadCSV(subjectId) {
+  window.location = `/faculty/summary/csv/${facultyId}/${subjectId}`;
+}
+
+load();
+</script>
+
+</body>
+</html>
