@@ -12,7 +12,7 @@ It provides separate panels for Admin, Faculty, and Students and allows feedback
 
 ## 📌 Project Overview
 
-The system simplifies the traditional feedback process by making it digital, organized, and easy to analyze.
+The system simplifies the traditional feedback process by making it digital, organized and easy to analyze.
 
 - Students can log in and submit feedback subject-wise
 - Faculty can view feedback summaries for their subjects
