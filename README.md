@@ -71,8 +71,8 @@ faculty-feedback/
 
 1. Clone the repository
 
-git clone https://github.com/<your-username>/<repo-name>.git  
-cd <repo-name>
+git clone https://github.com/<Onkar1021>/<Faculty-Feedback-System>.git  
+cd <Faculty-Feedback-System>
 
 2. Install dependencies
 
